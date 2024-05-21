@@ -18,12 +18,12 @@ fn main() -> Result<()> {
     }
 
     for _ in 0..M {
-        request_worker(metrics.clone());
+        request_worker(metrics.clone())?;
     }
 
     loop {
         thread::sleep(Duration::from_secs(2));
-        println!("{:?}", metrics.snapshot());
+        println!("{}", metrics);
     }
 }
 
@@ -38,13 +38,15 @@ fn task_worker(idx: usize, metrics: Metrics) {
     });
 }
 
-fn request_worker(metrics: Metrics) {
+fn request_worker(metrics: Metrics) -> Result<()> {
     thread::spawn(move || loop {
         // process requests
         let mut rng = rand::thread_rng();
         // do long term stuff
         thread::sleep(Duration::from_millis(rng.gen_range(50..800)));
         let page = rng.gen_range(1..=5);
-        metrics.inc(format!("req.page.{}", page)).unwrap();
+        metrics.inc(format!("req.page.{}", page));
     });
+    #[allow(unreachable_code)]
+    Ok::<_, anyhow::Error>(())
 }
